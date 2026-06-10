@@ -213,3 +213,192 @@ pub fn kill_pty(state: State<'_, PtyState>, id: String) -> Result<(), String> {
     }
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn base_args() -> SpawnArgs {
+        SpawnArgs {
+            id: "s1".into(),
+            host: "example.com".into(),
+            port: 22,
+            user: "alice".into(),
+            auth: "agent".into(),
+            identity: None,
+            jump: None,
+            forwards: vec![],
+            compression: false,
+            x11: false,
+            keepalive: 0,
+            strict_host_key: true,
+            cols: 80,
+            rows: 24,
+        }
+    }
+
+    fn argv(a: &SpawnArgs) -> Vec<String> {
+        build_command(a)
+            .get_argv()
+            .iter()
+            .map(|s| s.to_string_lossy().into_owned())
+            .collect()
+    }
+
+    /// True if `args` appear consecutively in `argv`.
+    fn has_seq(argv: &[String], args: &[&str]) -> bool {
+        argv.windows(args.len()).any(|w| w == args)
+    }
+
+    #[test]
+    fn minimal_agent_command() {
+        let argv = argv(&base_args());
+        assert_eq!(argv[0], "ssh");
+        assert!(has_seq(&argv, &["-p", "22"]));
+        assert_eq!(argv.last().unwrap(), "alice@example.com");
+        // nothing else sneaks in
+        assert!(!argv.contains(&"-C".into()));
+        assert!(!argv.contains(&"-X".into()));
+        assert!(!argv.contains(&"-i".into()));
+        assert!(!argv.contains(&"-J".into()));
+        assert!(!argv.contains(&"-L".into()));
+        assert!(!argv.iter().any(|a| a.starts_with("ServerAliveInterval")));
+        assert!(!argv.iter().any(|a| a.starts_with("StrictHostKeyChecking")));
+    }
+
+    #[test]
+    fn sets_terminal_env() {
+        let cmd = build_command(&base_args());
+        assert_eq!(cmd.get_env("TERM").unwrap().to_str(), Some("xterm-256color"));
+        assert_eq!(cmd.get_env("COLORTERM").unwrap().to_str(), Some("truecolor"));
+    }
+
+    #[test]
+    fn custom_port() {
+        let mut a = base_args();
+        a.port = 2222;
+        assert!(has_seq(&argv(&a), &["-p", "2222"]));
+    }
+
+    #[test]
+    fn keepalive_adds_server_alive_interval() {
+        let mut a = base_args();
+        a.keepalive = 30;
+        assert!(has_seq(&argv(&a), &["-o", "ServerAliveInterval=30"]));
+    }
+
+    #[test]
+    fn compression_and_x11_flags() {
+        let mut a = base_args();
+        a.compression = true;
+        a.x11 = true;
+        let argv = argv(&a);
+        assert!(argv.contains(&"-C".into()));
+        assert!(argv.contains(&"-X".into()));
+    }
+
+    #[test]
+    fn relaxed_host_key_uses_accept_new() {
+        let mut a = base_args();
+        a.strict_host_key = false;
+        assert!(has_seq(&argv(&a), &["-o", "StrictHostKeyChecking=accept-new"]));
+    }
+
+    #[test]
+    fn key_auth_with_identity() {
+        let mut a = base_args();
+        a.auth = "key".into();
+        a.identity = Some("~/.ssh/id_ed25519".into());
+        let argv = argv(&a);
+        assert!(has_seq(&argv, &["-i", "~/.ssh/id_ed25519"]));
+        assert!(has_seq(&argv, &["-o", "IdentitiesOnly=yes"]));
+    }
+
+    #[test]
+    fn key_auth_with_empty_identity_omits_dash_i() {
+        let mut a = base_args();
+        a.auth = "key".into();
+        a.identity = Some("".into());
+        let argv = argv(&a);
+        assert!(!argv.contains(&"-i".into()));
+        assert!(!argv.iter().any(|s| s == "IdentitiesOnly=yes"));
+    }
+
+    #[test]
+    fn password_auth_forces_interactive_prompt() {
+        let mut a = base_args();
+        a.auth = "password".into();
+        let argv = argv(&a);
+        assert!(has_seq(&argv, &["-o", "PreferredAuthentications=password,keyboard-interactive"]));
+        assert!(has_seq(&argv, &["-o", "PubkeyAuthentication=no"]));
+    }
+
+    #[test]
+    fn jump_host() {
+        let mut a = base_args();
+        a.jump = Some("bastion.example.com".into());
+        assert!(has_seq(&argv(&a), &["-J", "bastion.example.com"]));
+    }
+
+    #[test]
+    fn empty_jump_is_ignored() {
+        let mut a = base_args();
+        a.jump = Some("".into());
+        assert!(!argv(&a).contains(&"-J".into()));
+    }
+
+    #[test]
+    fn forward_display_form_becomes_dash_l_spec() {
+        let mut a = base_args();
+        a.forwards = vec!["127.0.0.1:5432 → db-primary:5432".into()];
+        assert!(has_seq(&argv(&a), &["-L", "127.0.0.1:5432:db-primary:5432"]));
+    }
+
+    #[test]
+    fn blank_forward_entries_are_skipped() {
+        let mut a = base_args();
+        a.forwards = vec!["".into(), "   ".into()];
+        assert!(!argv(&a).contains(&"-L".into()));
+    }
+
+    #[test]
+    fn destination_is_last_argument() {
+        // ssh treats everything after the destination as a remote command;
+        // all options must come before user@host.
+        let mut a = base_args();
+        a.auth = "key".into();
+        a.identity = Some("~/.ssh/id_rsa".into());
+        a.jump = Some("bastion".into());
+        a.compression = true;
+        a.keepalive = 15;
+        a.forwards = vec!["127.0.0.1:8080 → web:80".into()];
+        assert_eq!(argv(&a).last().unwrap(), "alice@example.com");
+    }
+
+    #[test]
+    fn spawn_args_deserializes_with_defaults() {
+        // The frontend may omit serde(default) fields; strict_host_key defaults true.
+        let a: SpawnArgs = serde_json::from_str(
+            r#"{ "id": "s1", "host": "h", "port": 22, "user": "u", "auth": "agent",
+                 "identity": null, "jump": null, "cols": 80, "rows": 24 }"#,
+        )
+        .unwrap();
+        assert!(a.strict_host_key);
+        assert!(!a.compression);
+        assert!(!a.x11);
+        assert_eq!(a.keepalive, 0);
+        assert!(a.forwards.is_empty());
+    }
+
+    #[test]
+    fn spawn_args_accepts_camel_case() {
+        let a: SpawnArgs = serde_json::from_str(
+            r#"{ "id": "s1", "host": "h", "port": 22, "user": "u", "auth": "agent",
+                 "identity": null, "jump": null, "cols": 80, "rows": 24,
+                 "strictHostKey": false, "keepalive": 60 }"#,
+        )
+        .unwrap();
+        assert!(!a.strict_host_key);
+        assert_eq!(a.keepalive, 60);
+    }
+}

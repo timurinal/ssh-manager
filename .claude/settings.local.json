@@ -30,7 +30,10 @@
       "Bash(command -v desktop-file-validate)",
       "Bash(desktop-file-validate ssh-manager.desktop)",
       "Bash(command -v namcap)",
-      "Bash(namcap PKGBUILD)"
+      "Bash(namcap PKGBUILD)",
+      "Bash(cargo test *)",
+      "Bash(PATH=__TRACKED_VAR__/.cargo/bin:__TRACKED_VAR__ cargo test)",
+      "Bash(npx vitest *)"
     ]
   }
 }
