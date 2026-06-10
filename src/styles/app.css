@@ -1,0 +1,517 @@
+/* app.css — application styles on top of theme.css (the design vocabulary).
+   Adapted from the design bundle's demo.css: the simulated-shell styles are
+   replaced by xterm.js integration; the Build Notes drawer is dropped. */
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--crust);
+  overscroll-behavior: none;
+}
+#root {
+  height: 100vh;
+}
+.app-root {
+  width: 100vw;
+  height: 100vh;
+}
+.win.app {
+  height: 100%;
+}
+
+/* clickable affordances */
+.win.app [data-clickable],
+.win.app button,
+.win.app .prow,
+.win.app .tab,
+.win.app .pal-item,
+.win.app .color-pill,
+.win.app .seg button,
+.win.app .swt,
+.win.app .nav-item {
+  cursor: pointer;
+}
+.win.app input:not([readonly]) {
+  cursor: text;
+}
+
+/* ============================================================
+   Terminal (xterm.js)
+   ============================================================ */
+.term {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 4px 10px 14px;
+  overflow: hidden;
+  white-space: normal;
+  position: relative;
+}
+.term .xterm-wrap {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+.term .xterm .xterm-viewport {
+  background: transparent !important;
+}
+.term .xterm .xterm-viewport::-webkit-scrollbar {
+  width: 10px;
+}
+.term .xterm .xterm-viewport::-webkit-scrollbar-thumb {
+  background: var(--surface1);
+  border-radius: 6px;
+  border: 3px solid var(--crust);
+}
+.term .xterm .xterm-viewport::-webkit-scrollbar-track {
+  background: transparent;
+}
+.win.app .xterm:focus-visible,
+.win.app .xterm textarea:focus-visible {
+  outline: none;
+}
+.win.app .xterm {
+  cursor: text;
+}
+
+/* connection error block (overlays the bottom of a failed pane) */
+.term-error {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  z-index: 5;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--red) 9%, var(--crust));
+  border: 1px solid color-mix(in srgb, var(--red) 35%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 560px;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.45);
+}
+.term-error .te-hd {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--red);
+  font-family: var(--ui-font);
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+}
+.term-error .te-hd svg {
+  width: 15px;
+  height: 15px;
+}
+.term-error .te-body {
+  font-family: var(--ui-font);
+  font-size: var(--fs-sm);
+  color: var(--subtext0);
+  line-height: 1.5;
+}
+.term-error .te-body code {
+  font-family: var(--mono-font);
+  color: var(--peach);
+  font-size: var(--fs-xs);
+}
+.term-error .te-acts {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+/* terminal header toolbar */
+.term-toolbar {
+  flex: 0 0 auto;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px 0 12px;
+  background: var(--mantle);
+  border-bottom: 1px solid var(--crust);
+  font-size: var(--fs-xs);
+  color: var(--overlay1);
+  font-family: var(--mono-font);
+}
+.term-toolbar .tt-host {
+  color: var(--subtext0);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+.term-toolbar .tt-host .dot {
+  width: 7px;
+  height: 7px;
+}
+.term-toolbar .spacer {
+  flex: 1;
+}
+.term-toolbar button {
+  height: 22px;
+  padding: 0 8px;
+  border: 0;
+  background: transparent;
+  border-radius: 5px;
+  color: var(--overlay1);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--ui-font);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+}
+.term-toolbar button:hover {
+  background: var(--surface0);
+  color: var(--text);
+}
+.term-toolbar button svg {
+  width: 13px;
+  height: 13px;
+}
+.term-toolbar button.on {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--accent);
+}
+
+/* ============================================================
+   Settings
+   ============================================================ */
+.settings {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+.set-nav {
+  flex: 0 0 198px;
+  padding: 18px 12px;
+  border-right: 1px solid var(--surface0);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.set-nav .nav-h {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--overlay0);
+  padding: 10px 10px 5px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  color: var(--subtext0);
+  font-size: var(--fs-sm);
+}
+.nav-item svg {
+  width: 15px;
+  height: 15px;
+  color: var(--overlay1);
+}
+.nav-item:hover {
+  background: var(--surface0);
+  color: var(--text);
+}
+.nav-item.on {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--text);
+}
+.nav-item.on svg {
+  color: var(--accent);
+}
+.set-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 26px 34px;
+}
+.set-body::-webkit-scrollbar,
+.main-scroll::-webkit-scrollbar,
+.set-nav::-webkit-scrollbar,
+.form-body::-webkit-scrollbar {
+  width: 10px;
+}
+.set-body::-webkit-scrollbar-thumb,
+.main-scroll::-webkit-scrollbar-thumb,
+.form-body::-webkit-scrollbar-thumb {
+  background: var(--surface1);
+  border-radius: 6px;
+  border: 3px solid var(--base);
+}
+.set-h1 {
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.set-sub {
+  font-size: var(--fs-sm);
+  color: var(--overlay1);
+  margin-bottom: 24px;
+}
+.set-grp {
+  max-width: 620px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 26px;
+}
+.set-grp-h {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--overlay0);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.set-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 13px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--surface0) 55%, transparent);
+}
+.set-row .sr-text {
+  flex: 1;
+  min-width: 0;
+}
+.set-row .sr-text b {
+  display: block;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--subtext1);
+}
+.set-row .sr-text span {
+  font-size: var(--fs-xs);
+  color: var(--overlay0);
+}
+.set-row .sr-ctrl {
+  flex: 0 0 auto;
+}
+
+/* font-size stepper */
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--surface1);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--base);
+}
+.stepper button {
+  width: 28px;
+  height: 30px;
+  border: 0;
+  background: transparent;
+  color: var(--subtext0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.stepper button:hover {
+  background: var(--surface0);
+  color: var(--text);
+}
+.stepper .val {
+  min-width: 46px;
+  text-align: center;
+  font-family: var(--mono-font);
+  font-size: var(--fs-sm);
+  color: var(--text);
+}
+.stepper svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* keybinding list */
+.keylist {
+  display: flex;
+  flex-direction: column;
+}
+.keyrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--surface0) 55%, transparent);
+  font-size: var(--fs-sm);
+}
+.keyrow .kk {
+  color: var(--subtext0);
+  flex: 1;
+}
+.keyrow .kbcombo {
+  display: flex;
+  gap: 4px;
+}
+
+/* ============================================================
+   Toast
+   ============================================================ */
+.toasts {
+  position: absolute;
+  bottom: 38px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  pointer-events: none;
+}
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 15px;
+  background: var(--surface0);
+  border: 1px solid var(--surface1);
+  border-radius: 999px;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.45);
+  font-size: var(--fs-sm);
+  color: var(--text);
+  animation: toastin 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.toast svg {
+  width: 15px;
+  height: 15px;
+}
+.toast .ok {
+  color: var(--green);
+}
+.toast .info {
+  color: var(--blue);
+}
+.toast .warn {
+  color: var(--yellow);
+}
+@keyframes toastin {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* small icon button used in headers */
+.iconbtn {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  background: transparent;
+  border-radius: 7px;
+  color: var(--overlay1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.iconbtn:hover {
+  background: var(--surface0);
+  color: var(--text);
+}
+.iconbtn.tb {
+  width: 26px;
+  height: 24px;
+  color: var(--overlay0);
+}
+.iconbtn.tb:hover {
+  background: var(--surface0);
+  color: var(--text);
+}
+.iconbtn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* tab overflow */
+.tabbar {
+  overflow-x: auto;
+}
+.tabbar::-webkit-scrollbar {
+  height: 0;
+}
+
+/* generic focus ring for keyboard */
+.win.app *:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* empty-tabs state inside session area */
+.no-session {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: var(--crust);
+  color: var(--overlay1);
+}
+.no-session .ns-ico {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: var(--mantle);
+  border: 1px solid var(--surface0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--overlay0);
+}
+.no-session .ns-ico svg {
+  width: 30px;
+  height: 30px;
+}
+.no-session p {
+  font-size: var(--fs-sm);
+}
+.no-session .kbd {
+  margin: 0 2px;
+}
+
+/* forwards editor rows in the form */
+.fwd-row .field {
+  height: 28px;
+  font-size: var(--fs-xs);
+  border-color: transparent;
+  background: transparent;
+  padding: 0 6px;
+}
+.fwd-row .field:focus-within {
+  border-color: var(--accent);
+  box-shadow: none;
+  background: var(--mantle);
+}
+.fwd-row .x {
+  cursor: pointer;
+}
+.fwd-row .x:hover {
+  color: var(--red);
+}
+.fwd-add {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  width: fit-content;
+}
+.fwd-add:hover {
+  filter: brightness(1.15);
+}
+
+/* hidden (backgrounded) session panes stay mounted to keep scrollback */
+.pane.hidden {
+  display: none;
+}

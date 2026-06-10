@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:api.anthropic.com)",
+      "Bash(npm --version)",
+      "Bash(cargo --version)",
+      "Bash(rustc --version)",
+      "Bash(pkg-config --modversion webkit2gtk-4.1)",
+      "Bash(pkg-config --modversion gtk+-3.0)",
+      "Read(//home/timuri/.cargo/**)",
+      "Read(//home/timuri/**)",
+      "Bash(pacman -Q rust rustup)",
+      "Bash(curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs)",
+      "Bash(sh -s -- -y --default-toolchain stable --profile minimal)",
+      "Bash(npm install *)",
+      "Bash(hyprctl dispatch *)",
+      "Bash(hyprctl activewindow *)",
+      "Bash(python3 -c \"import json,sys; print\\(json.load\\(sys.stdin\\)['class']\\)\")",
+      "Bash(hyprctl binds *)",
+      "Bash(grep -iB2 -A4 \", K\")",
+      "Bash(python3 -)",
+      "Bash(python3 *)",
+      "Bash(ydotool mousemove *)",
+      "Bash(hyprctl cursorpos *)",
+      "Bash(ssh-keygen -R \"[127.0.0.1]:2222\")",
+      "Bash(awk '{print $2, $11, $12}')",
+      "Bash(npm run *)",
+      "Bash(grep -iE 'lock|license|copying|\\\\.git$')",
+      "Bash(bash -n PKGBUILD)",
+      "Bash(command -v desktop-file-validate)",
+      "Bash(desktop-file-validate ssh-manager.desktop)",
+      "Bash(command -v namcap)",
+      "Bash(namcap PKGBUILD)"
+    ]
+  }
+}

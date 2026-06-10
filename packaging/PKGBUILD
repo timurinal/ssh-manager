@@ -1,0 +1,41 @@
+# Maintainer: Timur Inal <timurinal@proton.me>
+pkgname=ssh-manager
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Cross-platform SSH profile manager with an integrated terminal"
+arch=('x86_64')
+url="https://github.com/timurinal/ssh-manager"
+license=('MIT') # TODO: must match a LICENSE file in the repo root (see packaging/README.md)
+depends=('webkit2gtk-4.1' 'gtk3' 'openssh')
+makedepends=('rust' 'cargo' 'nodejs' 'npm')
+source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz")
+sha256sums=('SKIP') # run `updpkgsums` to pin this once the v$pkgver tag exists
+
+prepare() {
+	cd "$pkgname-$pkgver"
+	npm ci
+}
+
+build() {
+	cd "$pkgname-$pkgver"
+	# --no-bundle: build just the binary; the deb/rpm/AppImage bundlers are for
+	# other distros and aren't needed (or wanted) on Arch.
+	npm run tauri build -- --no-bundle
+}
+
+package() {
+	cd "$pkgname-$pkgver"
+
+	install -Dm755 "src-tauri/target/release/ssh-manager" \
+		"$pkgdir/usr/bin/ssh-manager"
+
+	install -Dm644 "packaging/ssh-manager.desktop" \
+		"$pkgdir/usr/share/applications/ssh-manager.desktop"
+
+	for size in 32 128 256 512; do
+		install -Dm644 "src-tauri/icons/${size}x${size}.png" \
+			"$pkgdir/usr/share/icons/hicolor/${size}x${size}/apps/ssh-manager.png"
+	done
+
+	install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

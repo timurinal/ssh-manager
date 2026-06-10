@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=SSH Manager
+GenericName=SSH Client
+Comment=Cross-platform SSH profile manager with an integrated terminal
+Exec=ssh-manager
+Icon=ssh-manager
+Terminal=false
+Categories=Network;RemoteAccess;
+Keywords=ssh;terminal;remote;server;shell;
+StartupNotify=true
+StartupWMClass=SSH Manager
